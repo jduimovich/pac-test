@@ -1,0 +1,17 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: pac-pipeline-annotation
+  namespace: demo   
+  annotations:
+    pipelinesascode.tekton.dev/on-event: "[push]"
+    pipelinesascode.tekton.dev/on-target-branch: "[main]" 
+    pipelinesascode.tekton.dev/pipeline: "./pipeline.yaml"
+    pipelinesascode.tekton.dev/task-0: "./task.yaml"
+spec: 
+  params:
+  - name: message
+    value: "Hello"
+  pipelineRef:
+    name: pac-pipeline
+
