@@ -1,10 +1,15 @@
  
  
- NS=test-pac 
+NS=test-pac 
  
-echo "Create Project $NS"
-echo "oc new-project $NS"
-oc new-project $NS 
+kubectl get ns $NS &> /dev/null
+ERR=$?
+if [  "$ERR" != "0" ]
+then 
+    echo "Create Project $NS"
+    echo "oc new-project $NS"
+    oc new-project $NS 
+fi 
 
 echo "Create Repo CR"
 echo "oc apply -f source-repository.yaml"
@@ -12,17 +17,21 @@ oc apply -f source-repository.yaml
  
 echo "Running Pipeline "
 echo "tkn-pac  resolve -f .tekton/on-push.yaml | oc create -f -"
+tkn-pac  resolve -f .tekton/on-push.yaml | oc create -f -
 
+echo "Sleep 10 for PR to run "
+sleep 10
 echo "Annotations in the current task"
+echo "yq .metadata.annotations  ./.tekton/task.yaml"
 echo "-------------------------"
 yq .metadata.annotations  ./.tekton/task.yaml
 echo "-------------------------"
 echo  
 
 echo "Annotation found in the running taskruns"
+echo "kubectl get taskruns -o yaml | yq .items[].metadata.annotations"
 ANNOTATIONS=$(kubectl get taskruns -o yaml | yq ".items[].metadata.annotations")
-
-echo "Annotations in all task runs "
+ 
 echo "-------------------------"
 echo "$ANNOTATIONS"
 echo "-------------------------"
