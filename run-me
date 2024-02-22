@@ -1,0 +1,40 @@
+ 
+ 
+ NS=test-pac 
+ 
+echo "Create Project $NS"
+echo "oc new-project $NS"
+oc new-project $NS 
+
+echo "Create Repo CR"
+echo "oc apply -f source-repository.yaml"
+oc apply -f source-repository.yaml
+ 
+echo "Running Pipeline "
+echo "tkn-pac  resolve -f .tekton/on-push.yaml | oc create -f -"
+
+echo "Annotations in the current task"
+echo "-------------------------"
+yq .metadata.annotations  ./.tekton/task.yaml
+echo "-------------------------"
+echo  
+
+echo "Annotation found in the running taskruns"
+ANNOTATIONS=$(kubectl get taskruns -o yaml | yq ".items[].metadata.annotations")
+
+echo "Annotations in all task runs "
+echo "-------------------------"
+echo "$ANNOTATIONS"
+echo "-------------------------"
+
+echo  
+
+echo "Search for THIS_SHOULD_BE_HERE"
+if echo "$ANNOTATIONS" | grep -q "THIS_SHOULD_BE_HERE"; then
+    echo "Success - found THIS_SHOULD_BE_HERE"
+else 
+    echo "Fail - missing THIS_SHOULD_BE_HERE"
+fi
+ 
+
+ 
